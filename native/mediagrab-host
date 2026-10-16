@@ -1,0 +1,30 @@
+#!/bin/bash
+# MediaGrab native messaging launcher.
+#
+# Chrome executes this file directly. It only picks a working python3 and hands
+# over to the real host, so the interpreter path stays in one place and can be
+# probed at runtime instead of being baked into a shebang.
+
+set -o pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+HOST_PY="$SCRIPT_DIR/mediagrab_host.py"
+
+if [ ! -f "$HOST_PY" ]; then
+  echo "mediagrab: host script not found at $HOST_PY" >&2
+  exit 1
+fi
+
+for PY in \
+  /opt/homebrew/bin/python3 \
+  /usr/local/bin/python3 \
+  "$HOME"/.workbuddy/binaries/python/versions/*/bin/python3 \
+  /usr/bin/python3
+do
+  if [ -x "$PY" ]; then
+    exec "$PY" "$HOST_PY" "$@"
+  fi
+done
+
+echo "mediagrab: no usable python3 found" >&2
+exit 1

@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>MediaGrab</title>
+<style>
+  :root {
+    --bg: #ffffff; --fg: #16181d; --dim: #6b7280;
+    --line: rgba(0,0,0,.10); --soft: #f5f6f8; --accent: #2563eb;
+    --ok: #15803d; --err: #b91c1c;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1d2026; --fg: #eef0f4; --dim: #9aa3af;
+      --line: rgba(255,255,255,.13); --soft: #262a32; --accent: #3b82f6;
+      --ok: #4ade80; --err: #f87171;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    width: 344px; margin: 0; padding: 14px;
+    background: var(--bg); color: var(--fg);
+    font: 500 13px/1.5 -apple-system, BlinkMacSystemFont, "PingFang SC", "Segoe UI", sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  h1 { margin: 0; font-size: 14px; font-weight: 650; display: flex; align-items: center; gap: 7px; }
+  h1 svg { width: 17px; height: 17px; color: var(--accent); }
+  .status { margin-left: auto; font-size: 11px; font-weight: 500; color: var(--dim);
+    display: flex; align-items: center; gap: 5px; }
+  .status i { width: 7px; height: 7px; border-radius: 50%; background: var(--dim); font-style: normal; }
+  .status.on i { background: var(--ok); }
+  .status.off i { background: var(--err); }
+
+  .card { margin-top: 12px; padding: 11px; border: 1px solid var(--line); border-radius: 11px; }
+  .card h2 { margin: 0 0 9px; font-size: 11px; font-weight: 600; color: var(--dim);
+    text-transform: uppercase; letter-spacing: .05em; }
+
+  .field { display: flex; align-items: center; gap: 8px; margin-bottom: 7px; }
+  .field:last-child { margin-bottom: 0; }
+  .field label { flex: none; width: 66px; color: var(--dim); font-size: 12px; }
+  select, input[type=text] {
+    flex: 1; min-width: 0; height: 29px; padding: 0 8px;
+    border: 1px solid var(--line); border-radius: 8px;
+    background: var(--soft); color: var(--fg); font: inherit; font-size: 12px;
+  }
+  select:focus, input:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
+
+  .check { display: flex; align-items: center; gap: 7px; margin-top: 7px;
+    font-size: 12px; color: var(--fg); cursor: pointer; }
+  .check input { accent-color: var(--accent); }
+
+  button {
+    height: 30px; padding: 0 11px; border: 1px solid var(--line); border-radius: 8px;
+    background: transparent; color: var(--fg); font: inherit; font-size: 12px; cursor: pointer;
+  }
+  button:hover { background: var(--soft); }
+  button.primary { background: var(--accent); border-color: transparent; color: #fff; font-weight: 600; }
+  button.primary:hover { filter: brightness(1.08); }
+  button:disabled { opacity: .5; cursor: default; filter: none; }
+  .btnrow { display: flex; gap: 7px; }
+
+  .job { display: flex; align-items: center; gap: 8px; padding: 6px 0;
+    border-top: 1px solid var(--line); font-size: 12px; }
+  .job:first-of-type { border-top: 0; }
+  .job .jt { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .job .js { flex: none; font-size: 11px; color: var(--dim); }
+  .job .js.ok { color: var(--ok); }
+  .job .js.err { color: var(--err); }
+  .job button { height: 22px; padding: 0 7px; font-size: 11px; }
+
+  .banner { margin-top: 12px; padding: 10px 11px; border-radius: 11px;
+    border: 1px solid var(--line); background: var(--soft); }
+  .banner .bt { font-size: 12.5px; font-weight: 650; margin-bottom: 3px; }
+  .banner .bd { font-size: 11.5px; color: var(--dim); line-height: 1.45; }
+
+  .hint { margin-top: 8px; font-size: 11px; color: var(--dim); line-height: 1.45; }
+  .variants { margin-top: 7px; display: flex; flex-wrap: wrap; gap: 5px; }
+  .variants .v { height: 24px; padding: 0 8px; font-size: 11.5px; border-radius: 6px; }
+  .variants .v.on { background: var(--accent); border-color: transparent; color: #fff;
+    font-weight: 600; }
+  .running { margin-top: 7px; }
+  .running .r { display: flex; align-items: center; gap: 6px; padding: 4px 0;
+    font-size: 11.5px; border-top: 1px solid var(--line); }
+  .running .r:first-child { border-top: 0; }
+  .running .rn { flex: 1; min-width: 0; overflow: hidden;
+    text-overflow: ellipsis; white-space: nowrap; }
+  .running .rp { flex: none; color: var(--dim); font-variant-numeric: tabular-nums; }
+  .running .r.ok .rp { color: var(--ok); }
+  .running .r.err .rp { color: var(--err); }
+  .running .bar { flex: none; width: 54px; height: 4px; border-radius: 2px;
+    background: var(--soft); overflow: hidden; }
+  .running .bar > i { display: block; height: 100%; background: var(--accent); }
+  .empty { padding: 8px 0; font-size: 12px; color: var(--dim); }
+  .errbox { margin-top: 9px; padding: 9px 10px; border-radius: 9px;
+    background: var(--soft); border: 1px solid var(--line);
+    font-size: 11.5px; color: var(--fg); line-height: 1.5; }
+  .errbox code { font-size: 11px; word-break: break-all; }
+</style>
+</head>
+<body>
+  <h1>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"
+         stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 3v12"/><path d="m7 11 5 5 5-5"/><path d="M4 20h16"/>
+    </svg>
+    MediaGrab
+    <span class="status" id="status"><i></i><span>检测中…</span></span>
+  </h1>
+
+  <div id="hostProblem" hidden></div>
+
+  <div class="banner" id="pageStale" hidden>
+    <div class="bt">本页还没装上扩展脚本</div>
+    <div class="bd" id="pageStaleWhy"></div>
+    <div class="btnrow" style="margin-top:8px">
+      <button class="primary" id="pageStaleReload" style="flex:1">刷新本页</button>
+      <button id="pageStaleYtdlp" title="不刷新也可以：把页面地址交给 yt-dlp 解析。能下到，但速度与进度只能看「最近任务」">仍用 yt-dlp 解析</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>当前标签页</h2>
+    <div id="tabInfo" class="empty">读取中…</div>
+    <div class="btnrow" style="margin-top:9px">
+      <button class="primary" id="tabDownload" style="flex:1">下载此页视频</button>
+      <button id="tabCopy" title="把解析出的视频直链复制到剪贴板，可粘贴进任何下载器">复制直链</button>
+    </div>
+    <div class="hint" id="tabHint"></div>
+    <div id="tabVariants" class="variants" hidden></div>
+    <div id="tabRunning" class="running"></div>
+    <div class="btnrow" style="margin-top:9px">
+      <button id="tabDiagnose" style="flex:1"
+        title="把这一页的抓取结果、失败原因与 MSE 体检报告复制成一段文本，便于排查">复制诊断信息</button>
+    </div>
+    <div class="hint" style="margin-top:6px">
+      下载动作在<strong>页面里</strong>执行（Telegram 这类站点的流地址只在页面上下文有效）。
+      关掉本窗口不影响，完成 / 失败会发系统通知。
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>默认设置</h2>
+    <div class="field"><label>下载方式</label>
+      <select id="mode">
+        <option value="browser">浏览器下载（进度可见）</option>
+        <option value="ytdlp">yt-dlp 下载（可合并 HLS）</option>
+      </select></div>
+    <div class="field"><label>画质</label>
+      <select id="quality">
+        <option value="best">最高画质</option>
+        <option value="1080">约 1080p</option>
+        <option value="720">约 720p</option>
+        <option value="480">约 480p</option>
+        <option value="audio">仅音频</option>
+      </select></div>
+    <div class="hint" style="margin:-1px 0 8px 74px">
+      浏览器下载：全程在页面里用 Range 分块拉取（Telegram 这类运行时流唯一的整片下载路径），
+      带完整性校验，不经 Chrome 下载栏、不会被下载器扩展接管。<br>
+      yt-dlp 下载：后台进程，能合并 HLS/DASH 分离流（B 站等），但没有系统级进度显示。
+      页面运行时生成流的站点（Telegram）用不了它。
+    </div>
+    <div class="field"><label>输出目录</label>
+      <input type="text" id="outDir" placeholder="~/Downloads（仅 yt-dlp 方式）" spellcheck="false"></div>
+    <div class="field"><label>Cookie 来源</label>
+      <select id="cookies">
+        <option value="chrome">Chrome（读取登录态）</option>
+        <option value="none">不使用</option>
+      </select></div>
+    <label class="check"><input type="checkbox" id="allowPlaylist"> 下载整条推文 / 播放列表</label>
+    <label class="check"><input type="checkbox" id="revealOnFinish"> 完成后在 Finder 中显示</label>
+    <label class="check"><input type="checkbox" id="notifyOnFinish"> 完成后发送系统通知</label>
+    <div class="btnrow" style="margin-top:9px">
+      <button id="openDir" style="flex:1">打开输出目录</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>最近任务</h2>
+    <div id="jobs"><div class="empty">暂无记录</div></div>
+    <div class="btnrow" style="margin-top:9px">
+      <button id="refresh" style="flex:1">刷新</button>
+      <button id="clear">清空记录</button>
+    </div>
+  </div>
+
+  <script src="sites.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>

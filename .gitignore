@@ -1,0 +1,27 @@
+# ---- 本机/个人产物：不进仓库 ----------------------------------------------
+.DS_Store
+
+# 扩展 ID 与密钥对：**必须**由每位用户本地生成（install.sh 缺了会自动生成）。
+# 私钥绝不能公开；而 extension_id.txt / key_b64 / pub.der 都是本机安装产物，
+# 你若提交了自己的，别人 clone 后 install.sh 会沿用你的扩展 ID。
+build/extension_key.pem
+build/extension_key_b64.txt
+build/extension_pub.der
+build/extension_id.txt
+
+# ⚠️ manifest.json **要提交**（缺了扩展装不起来），但其中的 "key" 字段是
+#    install.sh 写入的本机公钥，与 extension_key.pem 配对。
+#    仓库里放一份 key 为空的干净版；install.sh 会在安装时填上你本机的那一对，
+#    从而得到你自己的扩展 ID。已提交的版本不含任何人的私钥。
+
+# 参考项目副本（别人的开源仓库，191MB）与运行日志
+refs/
+logs/
+*.log
+
+# Python 字节码
+__pycache__/
+*.pyc
+
+# 本机任务的产物（install.sh 会把宿主部署到 ~/Library/Application Support/MediaGrab）
+*.part

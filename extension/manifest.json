@@ -1,0 +1,68 @@
+{
+  "manifest_version": 3,
+  "name": "MediaGrab — 网页视频下载",
+  "version": "1.9.4",
+  "description": "识别当前页面的视频：整片 Range 拉取（带完整性校验）或交给 yt-dlp。页面内不画任何东西，全部从工具栏图标进入。",
+  "minimum_chrome_version": "116",
+  "key": "",
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "permissions": [
+    "nativeMessaging",
+    "storage",
+    "downloads",
+    "notifications",
+    "alarms",
+    "scripting",
+    "activeTab",
+    "webRequest"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "MediaGrab",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "http://*/*",
+        "https://*/*"
+      ],
+      "js": [
+        "staging.js",
+        "rangeFetch.js",
+        "hooks.js"
+      ],
+      "run_at": "document_start",
+      "world": "MAIN",
+      "all_frames": false
+    },
+    {
+      "matches": [
+        "http://*/*",
+        "https://*/*"
+      ],
+      "js": [
+        "sites.js",
+        "staging.js",
+        "rangeFetch.js",
+        "content.js"
+      ],
+      "run_at": "document_idle",
+      "all_frames": false
+    }
+  ]
+}
