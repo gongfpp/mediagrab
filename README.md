@@ -6,6 +6,10 @@ Chrome 扩展 + 本机服务，让你在任意视频页面点一下就把视频�
   <img src="extension/icons/icon128.png" width="96" alt="MediaGrab 图标">
 </p>
 
+<p align="center">
+  <img src="docs/screenshots/home.png" width="380" alt="MediaGrab 扩展弹窗：当前标签页识别、下载此页视频、复制直链，以及下载方式与画质设置" />
+</p>
+
 它解决的是一个很具体的问题：**在扩展面板里对着几十条 m3u8 猜哪条是自己的视频**。
 你只需要点按钮，剩下的识别、解析、合并交给它。
 
